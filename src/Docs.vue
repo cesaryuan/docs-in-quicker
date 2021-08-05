@@ -21,6 +21,7 @@
 <script>
 import DocContainer from "./components/DocContainer.vue";
 import DocSearchBar from "./components/DocSearchBar.vue";
+import localforage from "localforage";
 var $quickerSync = window.$quickerSync;
 // import indexes from "../public/docsets/HTML/indexes.json";
 // var temp = JSON.stringify([]);
@@ -70,13 +71,16 @@ export default {
     //   if (allIndexes.length > 0) return allIndexes.map((i) => this.allItems[i]);
     //   else return [];
     // },
+    handleWord: function(searchWord){
+      return searchWord.replace("。", ".").toLowerCase();
+    },
     getMatched2(maxNum) {
       var matched = [];
       for (const key in this.allItems) {
         if (matched.length > maxNum) break;
         if (Object.hasOwnProperty.call(this.allItems, key)) {
           const element = this.allItems[key];
-          if ((element.t + element.d).toLowerCase().includes(this.searchWord.toLowerCase())) {
+          if ((element.t + element.d).toLowerCase().includes(this.handleWord(this.searchWord))) {
             matched.push(element);
           }
         }

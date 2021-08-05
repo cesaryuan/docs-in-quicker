@@ -12,6 +12,7 @@
     "darkmode-js": "^1.5.7",
     "element-ui": "^2.4.5",
     "flexsearch": "^0.6.32",
+    "localforage": "^1.9.0",
     "lodash": "^4.17.21",
     "vue": "^2.6.11"
   },

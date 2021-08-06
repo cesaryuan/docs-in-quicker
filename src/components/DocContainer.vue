@@ -2,9 +2,11 @@
   <el-container>
     <el-aside style="width: 30%">
       <doc-menu
+      class="doc-menu"
+       v-model="selectedItemIndex"
         :items="items"
-        v-model="selectedItemIndex"
-        class="doc-menu"
+        :itemsHighlightIndexes="itemsHighlightIndexes"
+       
         @scrolltobottom="$emit('scrolltobottom')"
         :highlightWord="searchWord"
       ></doc-menu>
@@ -23,7 +25,8 @@ export default {
   props: {
     items: Array,
     docsBasePath: String,
-    searchWord: String
+    searchWord: String,
+    itemsHighlightIndexes: Array
   },
   data() {
     return {

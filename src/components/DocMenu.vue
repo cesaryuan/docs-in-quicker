@@ -1,5 +1,5 @@
 <template>
-  <div class="doc-menu" @scroll="checkScroll" ref="menu">
+  <div v-infinite-scroll="load" v-loading="items.length == 0" class="doc-menu" ref="menu">
     <div
       v-for="(item, index) in items"
       :class="{
@@ -10,14 +10,15 @@
       ref="items"
       @click="currentIndex = index"
     >
-      <div class="doc-item-t" v-html="highlight(item.t)"></div>
-      <div class="doc-item-d" v-html="highlight(item.d)"></div>
+      <div class="doc-item-t" v-html="highlightV2(item.t, itemsHighlightIndexes && itemsHighlightIndexes[index]['t'])"></div>
+      <div class="doc-item-d" v-html="highlightV2(item.d, itemsHighlightIndexes && itemsHighlightIndexes[index]['d'])"></div>
     </div>
-    <div v-if="items.length == 0">没有找到~</div>
+    <!-- <div v-if="items.length == 0">没有找到~</div> -->
   </div>
 </template>
 
 <script>
+
 export default {
   model: {
     prop: "selectedItemIndex",
@@ -28,6 +29,7 @@ export default {
     itemsIndexes: Array,
     selectedItemIndex: Number,
     highlightWord: String,
+    itemsHighlightIndexes: Array
   },
   data() {
     return {
@@ -38,9 +40,12 @@ export default {
     itemSelect(index) {
       this.$emit("selected", index);
     },
+    load(){
+      this.$emit('scrolltobottom');
+    },
     checkScroll(el) {
       if (
-        el.srcElement.offsetHeight + el.srcElement.scrollTop + 40>=
+        el.srcElement.offsetHeight + el.srcElement.scrollTop + 40 >=
         el.srcElement.scrollHeight
       ) {
         this.hasScrolledToBottom = true;
@@ -57,12 +62,36 @@ export default {
           htmlEncode(text.substring(index, index + this.highlightWord.length)) +
           "</span>" +
           htmlEncode(text.substring(index + this.highlightWord.length));
-      } else
-        text = htmlEncode(text);
+      } else text = htmlEncode(text);
       return text;
     },
-    htmlEncode : function(value){
-        return !value ? value : String(value).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    highlightV2(text, indexes) {
+      let htmlEncode = this.htmlEncode;  
+      let result = '';  
+      if (indexes && indexes.length > 0) {    
+        var last = [0, -1];
+        for (var i = 0; i < indexes.length; last=indexes[i++]) {
+          var now = indexes[i];
+          result +=
+            htmlEncode(text.substring(last[1] + 1, now[0])) +
+            "<span class='mark'>" +
+            htmlEncode(text.substring(now[0], now[1] + 1)) +
+            "</span>" +
+            (i === indexes.length - 1 ? htmlEncode(text.substring(now[1] + 1, text.length)) : "");
+        }
+      } 
+      else 
+        result = htmlEncode(text);
+      return result;
+    },
+    htmlEncode: function (value) {
+      return !value
+        ? value
+        : String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/>/g, "&gt;")
+            .replace(/</g, "&lt;")
+            .replace(/"/g, "&quot;");
     },
 
     keepInSight: function keepInSight(child, parent) {
@@ -72,7 +101,10 @@ export default {
       ) {
         parent.scrollTo(
           0,
-          child.offsetTop - parent.offsetTop + child.clientHeight - parent.clientHeight
+          child.offsetTop -
+            parent.offsetTop +
+            child.clientHeight -
+            parent.clientHeight
         );
       } else if (child.offsetTop - parent.offsetTop - 3 < parent.scrollTop) {
         parent.scrollTo(0, child.offsetTop - parent.offsetTop);
@@ -110,7 +142,7 @@ export default {
           this.currentIndex -= 1;
           this.$emit("selected", this.currentIndex);
         }
-      } else if(ev.key == 'Escape'){
+      } else if (ev.key == "Escape") {
         window.close();
       }
     });

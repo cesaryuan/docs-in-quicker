@@ -1,5 +1,10 @@
 <template>
-  <div v-infinite-scroll="load" v-loading="items.length == 0" class="doc-menu" ref="menu">
+  <div
+    @scroll="checkScroll" 
+    v-loading="items.length == 0"
+    class="doc-menu"
+    ref="menu"
+  >
     <div
       v-for="(item, index) in items"
       :class="{
@@ -10,15 +15,30 @@
       ref="items"
       @click="currentIndex = index"
     >
-      <div class="doc-item-t" v-html="highlightV2(item.t, itemsHighlightIndexes && itemsHighlightIndexes[index]['t'])"></div>
-      <div class="doc-item-d" v-html="highlightV2(item.d, itemsHighlightIndexes && itemsHighlightIndexes[index]['d'])"></div>
+      <div
+        class="doc-item-t"
+        v-html="
+          highlightV2(
+            item.t,
+            itemsHighlightIndexes && itemsHighlightIndexes[index]['t']
+          )
+        "
+      ></div>
+      <div
+        class="doc-item-d"
+        v-html="
+          highlightV2(
+            item.d,
+            undefined
+          )
+        "
+      ></div>
     </div>
     <!-- <div v-if="items.length == 0">没有找到~</div> -->
   </div>
 </template>
 
 <script>
-
 export default {
   model: {
     prop: "selectedItemIndex",
@@ -29,7 +49,7 @@ export default {
     itemsIndexes: Array,
     selectedItemIndex: Number,
     highlightWord: String,
-    itemsHighlightIndexes: Array
+    itemsHighlightIndexes: Array,
   },
   data() {
     return {
@@ -40,8 +60,8 @@ export default {
     itemSelect(index) {
       this.$emit("selected", index);
     },
-    load(){
-      this.$emit('scrolltobottom');
+    load() {
+      this.$emit("scrolltobottom");
     },
     checkScroll(el) {
       if (
@@ -66,22 +86,22 @@ export default {
       return text;
     },
     highlightV2(text, indexes) {
-      let htmlEncode = this.htmlEncode;  
-      let result = '';  
-      if (indexes && indexes.length > 0) {    
+      let htmlEncode = this.htmlEncode;
+      let result = "";
+      if (indexes && indexes.length > 0) {
         var last = [0, -1];
-        for (var i = 0; i < indexes.length; last=indexes[i++]) {
+        for (var i = 0; i < indexes.length; last = indexes[i++]) {
           var now = indexes[i];
           result +=
             htmlEncode(text.substring(last[1] + 1, now[0])) +
             "<span class='mark'>" +
             htmlEncode(text.substring(now[0], now[1] + 1)) +
             "</span>" +
-            (i === indexes.length - 1 ? htmlEncode(text.substring(now[1] + 1, text.length)) : "");
+            (i === indexes.length - 1
+              ? htmlEncode(text.substring(now[1] + 1, text.length))
+              : "");
         }
-      } 
-      else 
-        result = htmlEncode(text);
+      } else result = htmlEncode(text);
       return result;
     },
     htmlEncode: function (value) {
